@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simplification Steps · CFG Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Top header bar -->
+  <header class="site-header">
+    <div class="header-logo">
+      <a href="/" class="back-btn">← Back</a>
+    </div>
+
+    <div class="header-steps" id="header-steps">
+      <div class="hdr-step active" id="hstep1">
+        <div class="hdr-step-num">1</div>
+        Remove ε-productions
+      </div>
+      <div class="hdr-sep"></div>
+      <div class="hdr-step" id="hstep2">
+        <div class="hdr-step-num">2</div>
+        Remove unit productions
+      </div>
+      <div class="hdr-sep"></div>
+      <div class="hdr-step" id="hstep3">
+        <div class="hdr-step-num">3</div>
+        Remove useless symbols
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="pdf-btn" onclick="downloadPDF()" class="pdf-btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 10L4.5 6.5M8 10L11.5 6.5M8 10V2M3 14H13" stroke="white" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+        Export PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- Three-column layout -->
+  <div class="layout-main">
+
+    <!-- Left sidebar: Step navigation & grammar -->
+    <aside class="sidebar-left">
+      <div class="sidebar-section">
+        <span class="sidebar-label">Steps</span>
+        <ul class="step-list" id="step-nav-list">
+          <li class="step-list-item active" onclick="goToStep(1)" id="sl1">
+            <div class="sli-num">1</div>
+            <div class="sli-label">Remove ε-productions</div>
+          </li>
+          <li class="step-list-item" onclick="goToStep(2)" id="sl2">
+            <div class="sli-num">2</div>
+            <div class="sli-label">Remove unit productions</div>
+          </li>
+          <li class="step-list-item" onclick="goToStep(3)" id="sl3">
+            <div class="sli-num">3</div>
+            <div class="sli-label">Remove useless symbols</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="sidebar-label">Original Grammar</span>
+        <div class="grammar-peek" id="sidebar-original">
+          <span class="gp-label">Input</span>
+          —
+        </div>
+      </div>
+
+
+    </aside>
+
+    <!-- Main content -->
+    <main class="content-area">
+
+      <!-- Loading state -->
+      <div id="loading-state" class="loading-state">
+        <div class="load-spinner"></div>
+        <p>Analysing your grammar…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-state" class="error-state" style="display:none;">
+        <div class="error-icon">⚠</div>
+        <h2>Something went wrong</h2>
+        <p id="error-msg"></p>
+        <a href="/" class="submit-btn" style="text-decoration:none;display:inline-flex;">← Try again</a>
+      </div>
+
+      <!-- Main content (populated by JS) -->
+      <div id="main-content" style="display:none;">
+
+        <!-- ── STEP 1 ── -->
+        <section class="step-section" id="sec1" data-step="1">
+          <div class="step-header step-blue">
+            <div class="step-badge">Step 1</div>
+            <h2>Remove Null (ε) Productions</h2>
+          </div>
+
+          <div class="after-state" id="step1-before"
+            style="border-radius:0;border-top:none;border-bottom:none;background:var(--bg-card);">
+            <div class="after-label">Grammar before Step 1</div>
+            <div class="grammar-box" id="step1-before-grammar"></div>
+          </div>
+
+          <div class="step-concept">
+            <h3>What are null productions?</h3>
+            <p>A <strong>null production</strong> is any grammar rule that produces the empty string ε, e.g.
+              <code>A → ε</code>. To remove them, we first find all <strong>nullable variables</strong> — variables that
+              can derive ε directly or indirectly. Then, for every production containing a nullable variable, we create
+              new versions with that variable both included and omitted.</p>
+            <p>Watch the <strong>strikethrough animation</strong> below to see which symbols get crossed out (removed)
+              and which new derivations appear.</p>
+          </div>
+
+          <div class="sub-card" id="step1-nullable"></div>
+
+          <!-- Step-by-step learning controls for step 1 -->
+          <div class="learn-controls" id="step1-learn-controls" style="display:none;">
+            <span>🎓 Step-by-step mode</span>
+            <button class="learn-btn" id="step1-reveal-btn" onclick="revealNextDerivation(1)">Reveal next →</button>
+            <button class="learn-btn" onclick="revealAllDerivations(1)">Show all</button>
+            <div class="step-progress-bar">
+              <div class="step-progress-fill" id="step1-progress-fill" style="width:0%"></div>
+            </div>
+            <span class="learn-progress" id="step1-learn-progress">0 / 0</span>
+          </div>
+
+          <div id="step1-derivations"></div>
+
+          <div class="after-state" id="step1-after">
+            <div class="after-label">Grammar after Step 1</div>
+            <div class="grammar-box" id="step1-grammar"></div>
+          </div>
+        </section>
+
+        <!-- ── STEP 2 ── -->
+        <section class="step-section" id="sec2" data-step="2" style="display:none;">
+          <div class="step-header step-green">
+            <div class="step-badge">Step 2</div>
+            <h2>Remove Unit Productions</h2>
+          </div>
+
+          <div class="after-state" id="step2-before"
+            style="border-radius:0;border-top:none;border-bottom:none;background:var(--bg-card);">
+            <div class="after-label">Grammar before Step 2</div>
+            <div class="grammar-box" id="step2-before-grammar"></div>
+          </div>
+
+          <div class="step-concept">
+            <h3>What are unit productions?</h3>
+            <p>A <strong>unit production</strong> is a rule of the form <code>A → B</code>, where both A and B are
+              variables. We find every <em>unit pair</em> (A, B) — meaning A can reach B through unit productions — and
+              replace those rules with all of B's non-unit productions.</p>
+          </div>
+
+          <div id="step2-body"></div>
+
+          <div class="after-state" id="step2-after">
+            <div class="after-label">Grammar after Step 2</div>
+            <div class="grammar-box" id="step2-grammar"></div>
+          </div>
+        </section>
+
+        <!-- ── STEP 3 ── -->
+        <section class="step-section" id="sec3" data-step="3" style="display:none;">
+          <div class="step-header step-purple">
+            <div class="step-badge">Step 3</div>
+            <h2>Remove Useless Symbols</h2>
+          </div>
+
+          <div class="after-state" id="step3-before"
+            style="border-radius:0;border-top:none;border-bottom:none;background:var(--bg-card);">
+            <div class="after-label">Grammar before Step 3</div>
+            <div class="grammar-box" id="step3-before-grammar"></div>
+          </div>
+
+          <div class="step-concept">
+            <h3>What are useless symbols?</h3>
+            <p>A symbol is <strong>useless</strong> if it can never contribute to generating a terminal string from the
+              start symbol. This happens in two ways:</p>
+            <ul>
+              <li><strong>Non-generating:</strong> The variable can never produce a string of terminals, no matter how
+                many steps.</li>
+              <li><strong>Unreachable:</strong> The variable can never be reached from the start symbol — it's dead
+                code.</li>
+            </ul>
+          </div>
+
+          <div class="sub-step-label">Part A — Non-generating symbols</div>
+          <div id="step3a-body"></div>
+
+          <div class="sub-step-label" style="margin-top:1.25rem;">Part B — Unreachable symbols</div>
+          <div id="step3b-body"></div>
+
+          <div class="after-state" id="step3-after">
+            <div class="after-label">✓ Final simplified grammar</div>
+            <div class="grammar-box final-grammar" id="step3-grammar"></div>
+          </div>
+        </section>
+
+        <!-- Navigation -->
+        <div class="step-nav" id="step-nav">
+          <button class="nav-btn" id="prev-btn" onclick="prevStep()" style="display:none;">← Previous</button>
+          <div class="nav-dots">
+            <span class="nav-dot active" onclick="goToStep(1)"></span>
+            <span class="nav-dot" onclick="goToStep(2)"></span>
+            <span class="nav-dot" onclick="goToStep(3)"></span>
+          </div>
+          <button class="nav-btn primary" id="next-btn" onclick="nextStep()">Next step →</button>
+        </div>
+
+      </div><!-- end #main-content -->
+    </main>
+
+    <!-- Right sidebar: Concepts & notes -->
+    <aside class="sidebar-right">
+      <div class="sidebar-section">
+        <span class="sidebar-label">Current Step</span>
+        <div class="ref-card" id="right-concept-card">
+          <div class="ref-card-title" id="right-concept-title">Step 1: ε-productions</div>
+          <p id="right-concept-body">Finding all nullable variables and generating new rules without them.</p>
+        </div>
+      </div>
+
+      <div class="sidebar-section" id="right-nullable-info" style="display:none;">
+        <span class="sidebar-label">Nullable Variables</span>
+        <div class="ref-card">
+          <p id="right-nullable-list">—</p>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="sidebar-label">Tip</span>
+        <div class="ref-card" id="right-tip-card">
+          <p id="right-tip-text">Use the step-by-step controls to reveal derivations one at a time and understand each
+            transformation.</p>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="sidebar-label">Legend</span>
+        <div class="ref-card">
+          <p style="font-size:11px; line-height: 2; color: var(--text-mid);">
+            <span
+              style="background:var(--red-bg);border:1px solid var(--red-border);color:var(--red-text);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px;">X</span>
+            Crossed out / removed<br>
+            <span
+              style="background:var(--green-bg);border:1px solid var(--green-mid);color:var(--green-text);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px;">X</span>
+            Added / kept<br>
+            <span
+              style="background:var(--amber-bg);border:1px solid #FFDE80;color:var(--amber-text);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px;">X</span>
+            Nullable variable<br>
+            <span
+              style="background:var(--purple-bg);border:1px solid var(--purple-mid);color:var(--purple-text);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px;">A→B</span>
+            Unit pair
+          </p>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- end layout-main -->
+
+  <script src="/static/js/result.js"></script>
+</body>
+
+</html>
