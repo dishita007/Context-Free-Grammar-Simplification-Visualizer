@@ -1,10 +1,6 @@
-Here’s a clean, polished README similar to yours, adapted for a second version (assuming improvements/features added). You can tweak names if needed:
+# CFG Simplification Teaching Tool 
 
----
-
-# CFG Simplification Teaching Tool (v2)
-
-An improved 2-page web application built with **Python (Flask)** to help students understand **Context-Free Grammar (CFG) simplification** through interactive, step-by-step visualization.
+A 2-page web application built with **Python (Flask)** to help students understand **Context-Free Grammar (CFG) simplification** through interactive, step-by-step visualization.
 
 ## Project Structure
 
